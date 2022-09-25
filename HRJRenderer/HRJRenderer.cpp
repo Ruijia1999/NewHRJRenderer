@@ -115,7 +115,12 @@ void Paint(HDC hdc) {
     HBITMAP hbmp = CreateCompatibleBitmap(hdc, 500, 500);
     hMemeDC = CreateCompatibleDC(hdc);
     SelectObject(hMemeDC, hbmp);
-    HRJRenderer::DrawModelMesh(model, RGB(255, 0, 0), hMemeDC);
+
+    //HRJRenderer::DrawTiangle(HRJRenderer::Vector2(0, 0), HRJRenderer::Vector2(300, 300), HRJRenderer::Vector2(0, 300), RGB(255, 0, 0), hMemeDC);
+    
+    //HRJRenderer::DrawModelMesh(model, RGB(255, 0, 0), hMemeDC);
+
+    HRJRenderer::DrawModel(model, RGB(255, 0, 0), hMemeDC);
     BitBlt(hdc, 0, 0, 500, 500, hMemeDC, 0, 0, SRCCOPY);
     DeleteDC(hMemeDC);
 
