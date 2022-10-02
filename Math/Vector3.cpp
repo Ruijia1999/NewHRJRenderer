@@ -11,7 +11,7 @@ HRJRenderer::Vector3::Vector3(float i_x, float i_y, float i_z) {
 	z = i_z;
 }
 
-float& HRJRenderer::Vector3::operator[](int i) {
+ float& HRJRenderer::Vector3::operator[](int i) {
 	switch (i)
 	{
 	case 0:

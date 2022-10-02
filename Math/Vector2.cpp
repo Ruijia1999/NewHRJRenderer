@@ -17,7 +17,10 @@ HRJRenderer::Vector2::Vector2(float i_x, float i_y) {
 float HRJRenderer::Vector2::operator^(const Vector2& i_vec) {
 	return x * i_vec.y - i_vec.x * y;
 }
-
+HRJRenderer::Vector2& HRJRenderer::Vector2::operator/(const float& i){
+	Vector2 outcome(x / i, y / i);
+	return outcome;
+}
 HRJRenderer::Vector2& HRJRenderer::Vector2::operator-(const Vector2& i_vec) {
 	Vector2 outcome(x - i_vec.x, y - i_vec.y);
 	return outcome;

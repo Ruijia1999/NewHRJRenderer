@@ -4,10 +4,14 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Light.cpp" />
+    <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Model.h" />
     <ClInclude Include="Draw.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Light.h" />
+    <ClInclude Include="Shader.h" />
   </ItemGroup>
 </Project>

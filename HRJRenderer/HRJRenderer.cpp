@@ -4,8 +4,15 @@
 #include "HRJRenderer.h"
 #include "Renderer/Draw.h"
 #include "Renderer/Model.h"
+#include "Renderer/Camera.h"
+#include "Math/Quaternion.h"
+#include "Input/Input.h"
+#include <windowsx.h>
 #define MAX_LOADSTRING 100
 
+
+static HRJRenderer::Camera s_camera;
+HRJRenderer::Input::InputStatus s_input;
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
@@ -22,11 +29,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+    
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
-    
+    s_camera.position = HRJRenderer::Vector3 (0, 0, 1.5);
     // TODO: Place code here.
-
+    LPPOINT point;
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_HRJRENDERER, szWindowClass, MAX_LOADSTRING);
@@ -114,13 +122,13 @@ void Paint(HDC hdc) {
     HDC hMemeDC;
     HBITMAP hbmp = CreateCompatibleBitmap(hdc, 500, 500);
     hMemeDC = CreateCompatibleDC(hdc);
-    SelectObject(hMemeDC, hbmp);
-
+    SelectObject(hMemeDC, hbmp); 
+    HRJRenderer::Draw::SubmitCamera(HRJRenderer::Math::CreateWorldToCameraTransform(s_camera.rotate, s_camera.position), HRJRenderer::Math::CreateCameraToProjectedTransform_perspective(1.5708, 1, 1, 10), HRJRenderer::Math::Matrix_transform(HRJRenderer::Math::Quaternion(), HRJRenderer::Vector3(0,0,0)));
     //HRJRenderer::DrawTiangle(HRJRenderer::Vector2(0, 0), HRJRenderer::Vector2(300, 300), HRJRenderer::Vector2(0, 300), RGB(255, 0, 0), hMemeDC);
     
-    //HRJRenderer::DrawModelMesh(model, RGB(255, 0, 0), hMemeDC);
+    HRJRenderer::Draw::DrawModelMesh(model, RGB(255, 0, 0), hMemeDC);
 
-    HRJRenderer::DrawModel(model, RGB(255, 0, 0), hMemeDC);
+    //HRJRenderer::Draw::DrawModel(model, RGB(255, 0, 0), hMemeDC);
     BitBlt(hdc, 0, 0, 500, 500, hMemeDC, 0, 0, SRCCOPY);
     DeleteDC(hMemeDC);
 
@@ -162,12 +170,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+    case WM_ERASEBKGND:
+        return TRUE;
+    case WM_LBUTTONDOWN:
+    {
+        int xPos = GET_X_LPARAM(lParam);
+        int yPos = GET_Y_LPARAM(lParam);
+        s_input.StartDrag(xPos,yPos);
+    }
+        
+        break;
+    case WM_LBUTTONUP:
+    {
+        s_input.isLeftPressed = false;
+    }
+
+    break;
     case WM_PAINT:
         {
             
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
- 
+        
         Paint(hdc);
         
         EndPaint(hWnd, &ps);
@@ -176,7 +200,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WM_MOUSEMOVE:
+    {
+        int xPos = GET_X_LPARAM(lParam);
+        int yPos = GET_Y_LPARAM(lParam);
+        if (s_input.isLeftPressed) {
+            HRJRenderer::Vector2 moveVec = s_input.GetDragVec(xPos, yPos)/500;
+            s_camera.position.x += moveVec.x;
+            s_camera.position.y += moveVec.y;
+            InvalidateRect(hWnd, NULL, true);
+            SendMessage(hWnd, WM_PAINT, wParam, lParam);
+        }
+    }
+    break;
     default:
+        
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;

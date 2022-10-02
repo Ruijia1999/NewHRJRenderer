@@ -1,28 +1,49 @@
 #include "Draw.h"
 
-void HRJRenderer::DrawModel(const Model& model, COLORREF i_color, HDC i_canvas) {
+HRJRenderer::Draw::ConstantBuffer s_constantBuffer;
+
+HRJRenderer::Vector2 HRJRenderer::Draw::GetTriangleVtx(const HRJRenderer::Vector3& i_vec) {
+	HRJRenderer::Vector4 vtx_Camera = s_constantBuffer.worldToCameraTransform * HRJRenderer::Vector4(i_vec, 1);
+	HRJRenderer::Vector4 vtx_Projected = s_constantBuffer.cameraPerspectiveTransform * (vtx_Camera);
+	vtx_Projected /= vtx_Projected.w;
+	HRJRenderer::Vector2 vtx_View((vtx_Projected.x + 1) * 250, (-vtx_Projected.y + 1) * 250);
+	return vtx_View;
+}
+
+void HRJRenderer::Draw::SubmitCamera(Math::Matrix_transform worldToCamera, Math::Matrix_transform project, Math::Matrix_transform localToWroldTransform) {
+	s_constantBuffer.cameraPerspectiveTransform = project;
+	s_constantBuffer.worldToCameraTransform = worldToCamera;
+	s_constantBuffer.localToWroldTransform = localToWroldTransform;
+}
+void HRJRenderer::Draw::DrawModel(const Model& model, COLORREF i_color, HDC i_canvas) {
 	std::vector<Vector3> face = model.m_facet_vrt;
 	int faceCount = face.size();
 	for (int i = 0; i < faceCount; i++) {
-		Vector2 vtx0((model.m_verts[face[i][0] - 1].x + 1) * 250, (-model.m_verts[face[i][0] - 1].y + 1) * 250);
-		Vector2 vtx1((model.m_verts[face[i][1] - 1].x + 1) * 250, (-model.m_verts[face[i][1] - 1].y + 1) * 250);
-		Vector2 vtx2((model.m_verts[face[i][2] - 1].x + 1) * 250, (-model.m_verts[face[i][2] - 1].y + 1) * 250);
-		HRJRenderer::DrawTiangle(vtx0, vtx1, vtx2, i_color, i_canvas);
+		HRJRenderer::Draw::DrawTiangle(
+			GetTriangleVtx(model.m_verts[face[i][0] - 1]), 
+			GetTriangleVtx(model.m_verts[face[i][1] - 1]), 
+			GetTriangleVtx(model.m_verts[face[i][2] - 1]),
+			i_color, i_canvas);
 	}
 }
-void HRJRenderer::DrawModelMesh(const Model& model, COLORREF i_color, HDC i_canvas) {
+
+void HRJRenderer::Draw::DrawModelMesh(const Model& model, COLORREF i_color, HDC i_canvas) {
 	std::vector<Vector3> face = model.m_facet_vrt;
 	int faceCount = face.size();
 	for (int i = 0; i < faceCount; i++) {
 		for (int j = 0; j < 3; j++) {
 			Vector3 v0 = model.m_verts[face[i][j]-1];
 			Vector3 v1 = model.m_verts[face[i][(j + 1) % 3]-1];
-			HRJRenderer::DrawLine((v0.x+1)*250, (-v0.y+1)*250, (v1.x+1)*250, (-v1.y+1)*250, i_color, i_canvas);
+			HRJRenderer::Draw::DrawLine(GetTriangleVtx(v0),GetTriangleVtx(v1), i_color, i_canvas);
 		}
 	}
 	    
 }
-void HRJRenderer::DrawLine(int x0, int y0, int x1, int y1, COLORREF i_color, HDC i_canvas){
+void HRJRenderer::Draw::DrawLine(const HRJRenderer::Vector2& i_vec0, const HRJRenderer::Vector2& i_vec1, COLORREF i_color, HDC i_canvas){
+	int x0 = i_vec0.x;
+	int y0 = i_vec0.y;
+	int x1 = i_vec1.x;
+	int y1 = i_vec1.y;
 
 	bool steep = false;
 
@@ -54,7 +75,7 @@ void HRJRenderer::DrawLine(int x0, int y0, int x1, int y1, COLORREF i_color, HDC
 	    
 }
 
-void HRJRenderer::DrawTiangle(Vector2 i_vtx0, Vector2 i_vtx1, Vector2 i_vtx2, COLORREF i_color, HDC i_canvas) {
+void HRJRenderer::Draw::DrawTiangle(Vector2 i_vtx0, Vector2 i_vtx1, Vector2 i_vtx2, COLORREF i_color, HDC i_canvas) {
 
 	//Get the rectangle
 	int x_min = min(i_vtx0.x, i_vtx1.x);
@@ -79,7 +100,7 @@ void HRJRenderer::DrawTiangle(Vector2 i_vtx0, Vector2 i_vtx1, Vector2 i_vtx2, CO
 
 }
 
-bool HRJRenderer::InTriangle(Vector2 i_point, Vector2 i_vtx0, Vector2 i_vtx1, Vector2 i_vtx2) {
+bool HRJRenderer::Draw::InTriangle(Vector2 i_point, Vector2 i_vtx0, Vector2 i_vtx1, Vector2 i_vtx2) {
 	Vector2 PA = i_vtx0 - i_point;
 	Vector2 PB = i_vtx1 - i_point;
 	Vector2 PC = i_vtx2 - i_point;
