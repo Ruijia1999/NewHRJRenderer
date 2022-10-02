@@ -1,29 +1,49 @@
 #include "Draw.h"
 
 HRJRenderer::Draw::ConstantBuffer s_constantBuffer;
+std::vector<std::vector<float>> zBuffer;
 
-HRJRenderer::Vector2 HRJRenderer::Draw::GetTriangleVtx(const HRJRenderer::Vector3& i_vec) {
-	HRJRenderer::Vector4 vtx_Camera = s_constantBuffer.worldToCameraTransform * HRJRenderer::Vector4(i_vec, 1);
-	HRJRenderer::Vector4 vtx_Projected = s_constantBuffer.cameraPerspectiveTransform * (vtx_Camera);
-	vtx_Projected /= vtx_Projected.w;
-	HRJRenderer::Vector2 vtx_View((vtx_Projected.x + 1) * 250, (-vtx_Projected.y + 1) * 250);
-	return vtx_View;
+
+void HRJRenderer::Draw::Initialize(int height, int width) {
+	for (int i = 0; i < height; i++) {
+		std::vector<float> vec;
+		for (int j = 0; j < width; j++) {
+			vec.push_back(FLT_MAX);
+		}
+		zBuffer.push_back(vec);
+	}
 }
-
+void HRJRenderer::Draw::ClearColor(int height, int width) {
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			zBuffer[i][j] = FLT_MAX;
+		}
+		
+	}
+}
+//Submit constantBuffer
 void HRJRenderer::Draw::SubmitCamera(Math::Matrix_transform worldToCamera, Math::Matrix_transform project, Math::Matrix_transform localToWroldTransform) {
 	s_constantBuffer.cameraPerspectiveTransform = project;
 	s_constantBuffer.worldToCameraTransform = worldToCamera;
 	s_constantBuffer.localToWroldTransform = localToWroldTransform;
 }
+
+void HRJRenderer::Draw::SubmitLight(const HRJRenderer::Light::LightSetting& i_lightSetting) {
+	s_constantBuffer.lightSetting = i_lightSetting;
+}
+
+//Some draw functions
 void HRJRenderer::Draw::DrawModel(const Model& model, COLORREF i_color, HDC i_canvas) {
 	std::vector<Vector3> face = model.m_facet_vrt;
 	int faceCount = face.size();
 	for (int i = 0; i < faceCount; i++) {
+		Vector3 normal = Math::GetTriangleNormal(model.m_verts[face[i][0] - 1], model.m_verts[face[i][1] - 1], model.m_verts[face[i][2] - 1]);
+		COLORREF newColor = i_color * Math::GetAngel(normal, s_constantBuffer.lightSetting.diffuseLight.direction);
 		HRJRenderer::Draw::DrawTiangle(
 			GetTriangleVtx(model.m_verts[face[i][0] - 1]), 
 			GetTriangleVtx(model.m_verts[face[i][1] - 1]), 
 			GetTriangleVtx(model.m_verts[face[i][2] - 1]),
-			i_color, i_canvas);
+			newColor, i_canvas);
 	}
 }
 
@@ -74,8 +94,14 @@ void HRJRenderer::Draw::DrawLine(const HRJRenderer::Vector2& i_vec0, const HRJRe
 	}
 	    
 }
-
-void HRJRenderer::Draw::DrawTiangle(Vector2 i_vtx0, Vector2 i_vtx1, Vector2 i_vtx2, COLORREF i_color, HDC i_canvas) {
+HRJRenderer::Vector3 HRJRenderer::Draw::GetTriangleVtx(const HRJRenderer::Vector3& i_vec) {
+	HRJRenderer::Vector4 vtx_Camera = s_constantBuffer.worldToCameraTransform * HRJRenderer::Vector4(i_vec, 1);
+	HRJRenderer::Vector4 vtx_Projected = s_constantBuffer.cameraPerspectiveTransform * (vtx_Camera);
+	vtx_Projected /= vtx_Projected.w;
+	HRJRenderer::Vector3 vtx_View((vtx_Projected.x + 1) * 250, (-vtx_Projected.y + 1) * 250, (vtx_Projected.z + 1) * 250);
+	return vtx_View;
+}
+void HRJRenderer::Draw::DrawTiangle(Vector3 i_vtx0, Vector3 i_vtx1, Vector3 i_vtx2, COLORREF i_color, HDC i_canvas) {
 
 	//Get the rectangle
 	int x_min = min(i_vtx0.x, i_vtx1.x);
@@ -87,13 +113,25 @@ void HRJRenderer::Draw::DrawTiangle(Vector2 i_vtx0, Vector2 i_vtx1, Vector2 i_vt
 	int y_max = max(i_vtx0.y, i_vtx1.y);
 	y_max = max(y_max, i_vtx2.y);
 
+	
+	//Avoid drawing outside the screen;
+	x_max = min(x_max, 500-1);
+	x_min = max(x_min, 1);
+	y_max = min(y_max, 500-1);
+	y_min = max(y_min, 1);
 
 	for (int i = x_min; i <= x_max; i++ ) {
 		for (int j = y_min; j <= y_max; j++) {
-			//SetPixel(i_canvas, i, j, i_color);
+			
 			//Whether the point is in/on the triangle
 			if (InTriangle(Vector2(i, j), i_vtx0, i_vtx1, i_vtx2)) {
-				SetPixel(i_canvas, i, j, i_color);
+				Vector3 vec = Math::GetBarycentric(i_vtx0, i_vtx1, i_vtx2, HRJRenderer::Vector2(i,j));
+				float zbuffer = Math::GetZBuffer(i_vtx0, i_vtx1, i_vtx2, vec);
+				if (zBuffer[i][j] > zbuffer) {
+					zBuffer[i][j] = zbuffer;
+					SetPixel(i_canvas, i, j, i_color);
+				}
+				
 			}
 		}
 	}

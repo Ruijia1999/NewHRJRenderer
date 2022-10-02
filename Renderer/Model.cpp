@@ -20,7 +20,7 @@ HRJRenderer::Model::Model(const char* i_filename): m_verts(), m_uv(), m_norms(),
             float j;
             int q;
             for (int i = 0; i < 3; i++) iss >> n[i];
-            m_norms.push_back(n.Normalize());
+            m_norms.push_back(HRJRenderer::Math::Normalize(n));
         }
         else if (!line.compare(0, 3, "vt ")) {
             iss >> trash >> trash;

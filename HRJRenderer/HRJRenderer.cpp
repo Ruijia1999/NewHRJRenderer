@@ -7,6 +7,7 @@
 #include "Renderer/Camera.h"
 #include "Math/Quaternion.h"
 #include "Input/Input.h"
+#include "Renderer/Light.h"
 #include <windowsx.h>
 #define MAX_LOADSTRING 100
 
@@ -18,6 +19,8 @@ HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 HRJRenderer::Model model("C:\\Users\\rjhua\\Desktop\\New folder\\HRJRenderer\\Resources\\head.obj");
+HRJRenderer::Light::LightSetting lightSetting;
+
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -30,9 +33,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ int       nCmdShow)
 {
     
-    UNREFERENCED_PARAMETER(hPrevInstance);
+     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
+    //Initialize
+   
+    HRJRenderer::Draw::Initialize(500, 500);
     s_camera.position = HRJRenderer::Vector3 (0, 0, 1.5);
+    lightSetting.diffuseLight.direction = HRJRenderer::Vector3(0, 0, 1);
+   
     // TODO: Place code here.
     LPPOINT point;
     // Initialize global strings
@@ -119,16 +127,19 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 void Paint(HDC hdc) {
+    
     HDC hMemeDC;
     HBITMAP hbmp = CreateCompatibleBitmap(hdc, 500, 500);
     hMemeDC = CreateCompatibleDC(hdc);
     SelectObject(hMemeDC, hbmp); 
+    HRJRenderer::Draw::ClearColor(500, 500);
     HRJRenderer::Draw::SubmitCamera(HRJRenderer::Math::CreateWorldToCameraTransform(s_camera.rotate, s_camera.position), HRJRenderer::Math::CreateCameraToProjectedTransform_perspective(1.5708, 1, 1, 10), HRJRenderer::Math::Matrix_transform(HRJRenderer::Math::Quaternion(), HRJRenderer::Vector3(0,0,0)));
+    HRJRenderer::Draw::SubmitLight(lightSetting);
+   
     //HRJRenderer::DrawTiangle(HRJRenderer::Vector2(0, 0), HRJRenderer::Vector2(300, 300), HRJRenderer::Vector2(0, 300), RGB(255, 0, 0), hMemeDC);
-    
-    HRJRenderer::Draw::DrawModelMesh(model, RGB(255, 0, 0), hMemeDC);
+    //HRJRenderer::Draw::DrawModelMesh(model, RGB(255, 255, 255), hMemeDC);
 
-    //HRJRenderer::Draw::DrawModel(model, RGB(255, 0, 0), hMemeDC);
+    HRJRenderer::Draw::DrawModel(model, RGB(255, 0, 0), hMemeDC);
     BitBlt(hdc, 0, 0, 500, 500, hMemeDC, 0, 0, SRCCOPY);
     DeleteDC(hMemeDC);
 

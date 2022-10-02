@@ -5,13 +5,22 @@
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Light.cpp" />
-    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Shader.cpp">
+      <Filter>Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Model.h" />
     <ClInclude Include="Draw.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Light.h" />
-    <ClInclude Include="Shader.h" />
+    <ClInclude Include="Shader.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{c35d40c9-95c5-413c-9b04-e386bf45337a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
