@@ -10,7 +10,11 @@
 #include "Renderer/Light.h"
 #include <windowsx.h>
 #define MAX_LOADSTRING 100
-
+#define IDB_DRAWMODE  3301  
+#define IDB_TWO     3302  
+#define IDB_THREE   3303  
+#define DRAW_MESH 101
+#define DRAW_COLOR 102
 
 static HRJRenderer::Camera s_camera;
 HRJRenderer::Input::InputStatus s_input;
@@ -20,6 +24,9 @@ WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 HRJRenderer::Model model("C:\\Users\\rjhua\\Desktop\\New folder\\HRJRenderer\\Resources\\head.obj");
 HRJRenderer::Light::LightSetting lightSetting;
+
+int drawMode = DRAW_COLOR;
+
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -72,7 +79,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 }
 
 
-
+HWND btn_DrawMode;
 //
 //  FUNCTION: MyRegisterClass()
 //
@@ -114,7 +121,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // Store instance handle in our global variable
 
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+       CW_USEDEFAULT, CW_USEDEFAULT, 600, 550, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
@@ -126,6 +133,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    return TRUE;
 }
+
 void Paint(HDC hdc) {
     
     HDC hMemeDC;
@@ -137,9 +145,11 @@ void Paint(HDC hdc) {
     HRJRenderer::Draw::SubmitLight(lightSetting);
    
     //HRJRenderer::DrawTiangle(HRJRenderer::Vector2(0, 0), HRJRenderer::Vector2(300, 300), HRJRenderer::Vector2(0, 300), RGB(255, 0, 0), hMemeDC);
-    //HRJRenderer::Draw::DrawModelMesh(model, RGB(255, 255, 255), hMemeDC);
-
+if(drawMode==DRAW_MESH)
+    HRJRenderer::Draw::DrawModelMesh(model, RGB(255, 255, 255), hMemeDC);
+else if(drawMode == DRAW_COLOR)
     HRJRenderer::Draw::DrawModel(model, RGB(255, 0, 0), hMemeDC);
+
     BitBlt(hdc, 0, 0, 500, 500, hMemeDC, 0, 0, SRCCOPY);
     DeleteDC(hMemeDC);
 
@@ -161,7 +171,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
     {
         HBITMAP MemBitmap;
-
+        btn_DrawMode = CreateWindowW(L"Button", L"Mesh", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE, 500, 0, 85, 30, hWnd, (HMENU)IDB_DRAWMODE, ((LPCREATESTRUCT)lParam)->hInstance, NULL);
+        
     }
     break;
     case WM_COMMAND:
@@ -176,11 +187,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDM_EXIT:
                 DestroyWindow(hWnd);
                 break;
+            case IDB_DRAWMODE:
+                if (drawMode == DRAW_COLOR) {
+                    drawMode = DRAW_MESH;
+                    SendMessage(btn_DrawMode, WM_SETTEXT, 0, (LPARAM)L"Color");
+                }
+                else if (drawMode == DRAW_MESH) {
+                    drawMode = DRAW_COLOR;
+                    SendMessage(btn_DrawMode, WM_SETTEXT, 0, (LPARAM)L"Mesh");
+                }
+                
+                InvalidateRect(hWnd, NULL, true);
+                SendMessage(hWnd, WM_PAINT, wParam, lParam);
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
             }
         }
         break;
+    case WM_SETTEXT:
+    {
+       
+            int wmId = LOWORD(wParam);
+            // Parse the menu selections:
+            switch (wmId)
+            {
+            case IDB_DRAWMODE:
+                int i = 0;
+            }
+    }
+    break;
     case WM_ERASEBKGND:
         return TRUE;
     case WM_LBUTTONDOWN:
@@ -224,6 +259,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
     }
     break;
+   
     default:
         
         return DefWindowProc(hWnd, message, wParam, lParam);
