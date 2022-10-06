@@ -8,11 +8,12 @@
 #include "Math/Quaternion.h"
 #include "Input/Input.h"
 #include "Renderer/Light.h"
+#include "Renderer/Color.h"
 #include <windowsx.h>
 #define MAX_LOADSTRING 100
-#define IDB_DRAWMODE  3301  
-#define IDB_TWO     3302  
-#define IDB_THREE   3303  
+#define IDB_DRAWMODE  3301
+#define IDB_FLAT   3302  
+#define IDB_GOURAUD     3303  
 #define DRAW_MESH 101
 #define DRAW_COLOR 102
 
@@ -26,7 +27,7 @@ HRJRenderer::Model model("C:\\Users\\rjhua\\Desktop\\New folder\\HRJRenderer\\Re
 HRJRenderer::Light::LightSetting lightSetting;
 
 int drawMode = DRAW_COLOR;
-
+int shaderType = 1001;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -47,7 +48,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HRJRenderer::Draw::Initialize(500, 500);
     s_camera.position = HRJRenderer::Vector3 (0, 0, 1.5);
     lightSetting.diffuseLight.direction = HRJRenderer::Vector3(0, 0, 1);
-   
+    lightSetting.diffuseLight.lightColor = HRJRenderer::Color(1, 1, 1,1);
     // TODO: Place code here.
     LPPOINT point;
     // Initialize global strings
@@ -80,6 +81,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
 HWND btn_DrawMode;
+HWND btn_Flat;
+HWND btn_Gouraud;
+
 //
 //  FUNCTION: MyRegisterClass()
 //
@@ -121,7 +125,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // Store instance handle in our global variable
 
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-       CW_USEDEFAULT, CW_USEDEFAULT, 600, 550, nullptr, nullptr, hInstance, nullptr);
+       CW_USEDEFAULT, CW_USEDEFAULT, 630, 550, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
@@ -142,13 +146,13 @@ void Paint(HDC hdc) {
     SelectObject(hMemeDC, hbmp); 
     HRJRenderer::Draw::ClearColor(500, 500);
     HRJRenderer::Draw::SubmitCamera(HRJRenderer::Math::CreateWorldToCameraTransform(s_camera.rotate, s_camera.position), HRJRenderer::Math::CreateCameraToProjectedTransform_perspective(1.5708, 1, 1, 10), HRJRenderer::Math::Matrix_transform(HRJRenderer::Math::Quaternion(), HRJRenderer::Vector3(0,0,0)));
-    HRJRenderer::Draw::SubmitLight(lightSetting);
+    HRJRenderer::Draw::SubmitLight(lightSetting, model);
    
     //HRJRenderer::DrawTiangle(HRJRenderer::Vector2(0, 0), HRJRenderer::Vector2(300, 300), HRJRenderer::Vector2(0, 300), RGB(255, 0, 0), hMemeDC);
 if(drawMode==DRAW_MESH)
-    HRJRenderer::Draw::DrawModelMesh(model, RGB(255, 255, 255), hMemeDC);
+    HRJRenderer::Draw::DrawModelMesh(model, HRJRenderer::Color(1, 1, 1, 1), hMemeDC);
 else if(drawMode == DRAW_COLOR)
-    HRJRenderer::Draw::DrawModel(model, RGB(255, 0, 0), hMemeDC);
+    HRJRenderer::Draw::DrawModel(HRJRenderer::Color(1, 1, 1,1), shaderType, hMemeDC);
 
     BitBlt(hdc, 0, 0, 500, 500, hMemeDC, 0, 0, SRCCOPY);
     DeleteDC(hMemeDC);
@@ -171,7 +175,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
     {
         HBITMAP MemBitmap;
-        btn_DrawMode = CreateWindowW(L"Button", L"Mesh", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE, 500, 0, 85, 30, hWnd, (HMENU)IDB_DRAWMODE, ((LPCREATESTRUCT)lParam)->hInstance, NULL);
+        btn_DrawMode = CreateWindowW(L"Button", L"Mesh", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE, 500, 0, 115, 30, hWnd, (HMENU)IDB_DRAWMODE, ((LPCREATESTRUCT)lParam)->hInstance, NULL);
+        btn_Flat = CreateWindowW(L"Button", L"Flat Shading", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE, 500, 50, 115, 30, hWnd, (HMENU)IDB_FLAT, ((LPCREATESTRUCT)lParam)->hInstance, NULL);
+        btn_Gouraud = CreateWindowW(L"Button", L"Gouraud Shading", BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE, 500, 80, 115, 30, hWnd, (HMENU)IDB_GOURAUD, ((LPCREATESTRUCT)lParam)->hInstance, NULL);
+        
         
     }
     break;
@@ -196,9 +203,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     drawMode = DRAW_COLOR;
                     SendMessage(btn_DrawMode, WM_SETTEXT, 0, (LPARAM)L"Mesh");
                 }
-                
+
                 InvalidateRect(hWnd, NULL, true);
                 SendMessage(hWnd, WM_PAINT, wParam, lParam);
+                break;
+            case IDB_FLAT:
+            {
+                shaderType = 1001;
+                InvalidateRect(hWnd, NULL, true);
+                SendMessage(hWnd, WM_PAINT, wParam, lParam);
+            }
+            break;
+            case IDB_GOURAUD:
+            {
+                shaderType = 1002;
+                InvalidateRect(hWnd, NULL, true);
+                SendMessage(hWnd, WM_PAINT, wParam, lParam);
+            }
+            break;
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
             }
@@ -238,7 +260,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
         
-        Paint(hdc);
+        Paint( hdc);
         
         EndPaint(hWnd, &ps);
         }
@@ -253,7 +275,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (s_input.isLeftPressed) {
             HRJRenderer::Vector2 moveVec = s_input.GetDragVec(xPos, yPos)/500;
             s_camera.position.x += moveVec.x;
-            s_camera.position.y += moveVec.y;
+            s_camera.position.y -= moveVec.y;
             InvalidateRect(hWnd, NULL, true);
             SendMessage(hWnd, WM_PAINT, wParam, lParam);
         }

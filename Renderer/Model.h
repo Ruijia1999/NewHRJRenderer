@@ -22,6 +22,7 @@ namespace HRJRenderer {
         //void load_texture(const char* filename, const char* suffix, TGAImage& img);
     public:
         Model(const char* i_filename);
+        Model();
         
     };
 }

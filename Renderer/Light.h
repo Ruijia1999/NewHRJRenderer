@@ -1,5 +1,6 @@
 #pragma once
 #include "Math/Math.h"
+#include "Color.h"
 #include <Windows.h>
 namespace HRJRenderer {
 	namespace Light {
@@ -10,7 +11,7 @@ namespace HRJRenderer {
 
 		struct DiffuseLight {
 			HRJRenderer::Vector3 direction;
-			COLORREF lightColor;
+			Color lightColor;
 		};
 		class LightSetting {
 		public:

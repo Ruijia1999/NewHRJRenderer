@@ -154,16 +154,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Color.cpp" />
     <ClCompile Include="Draw.cpp" />
+    <ClCompile Include="FlatShader.cpp" />
+    <ClCompile Include="GouraudShader.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Phong.cpp" />
     <ClCompile Include="Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Draw.h" />
+    <ClInclude Include="FlatShader.h" />
+    <ClInclude Include="GouraudShader.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="Phong.h" />
     <ClInclude Include="Shader.h" />
   </ItemGroup>
   <ItemGroup>

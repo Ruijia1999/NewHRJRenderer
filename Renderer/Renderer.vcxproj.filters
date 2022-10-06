@@ -8,6 +8,16 @@
     <ClCompile Include="Shader.cpp">
       <Filter>Shaders</Filter>
     </ClCompile>
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="GouraudShader.cpp">
+      <Filter>Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="FlatShader.cpp">
+      <Filter>Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Phong.cpp">
+      <Filter>Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Model.h" />
@@ -15,6 +25,17 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Shader.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantBuffer.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="GouraudShader.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="FlatShader.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Phong.h">
       <Filter>Shaders</Filter>
     </ClInclude>
   </ItemGroup>

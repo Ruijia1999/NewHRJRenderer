@@ -1,4 +1,7 @@
 #include "Model.h"
+HRJRenderer::Model::Model() {
+
+}
 HRJRenderer::Model::Model(const char* i_filename): m_verts(), m_uv(), m_norms(), m_facet_nrm(), m_facet_tex(), m_facet_vrt() {
     std::ifstream inStream;
     inStream.open(i_filename, std::ifstream::in);

@@ -18,7 +18,7 @@ namespace HRJRenderer {
 				const float i_30, const float i_31, const float i_32, const float i_33 );
 			Matrix_transform(const Quaternion& i_rotation, const Vector3& i_translation);
 			Vector4& operator*(const Vector4& i_matrix4);
-			
+			Vector4 operator*(const Vector4& i_matrix4) const;
 			Vector4& operator[](int i);
 			Vector4 operator[](int i) const;
 			void operator=(const Matrix_transform& i_matrix4);

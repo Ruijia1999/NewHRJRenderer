@@ -82,6 +82,15 @@ HRJRenderer::Vector4& HRJRenderer::Math::Matrix_transform::operator*(const Vecto
 	outcome.w = i_vec4.x * matrix[0][3] + i_vec4.y * matrix[1][3] + i_vec4.z * matrix[2][3] + i_vec4.w * matrix[3][3];
 	return outcome;
 }
+HRJRenderer::Vector4 HRJRenderer::Math::Matrix_transform::operator*(const Vector4& i_vec4) const {
+	Vector4 outcome;
+	int i = this->matrix[0][1];
+	outcome.x = i_vec4.x * matrix[0][0] + i_vec4.y * matrix[1][0] + i_vec4.z * matrix[2][0] + i_vec4.w * matrix[3][0];
+	outcome.y = i_vec4.x * matrix[0][1] + i_vec4.y * matrix[1][1] + i_vec4.z * matrix[2][1] + i_vec4.w * matrix[3][1];
+	outcome.z = i_vec4.x * matrix[0][2] + i_vec4.y * matrix[1][2] + i_vec4.z * matrix[2][2] + i_vec4.w * matrix[3][2];
+	outcome.w = i_vec4.x * matrix[0][3] + i_vec4.y * matrix[1][3] + i_vec4.z * matrix[2][3] + i_vec4.w * matrix[3][3];
+	return outcome;
+}
 
 HRJRenderer::Vector4 HRJRenderer::Math::Matrix_transform::operator[](int i) const{
 	return matrix[i];
